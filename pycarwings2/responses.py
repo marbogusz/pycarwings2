@@ -465,6 +465,59 @@ class CarwingsDrivingAnalysisResponse(CarwingsResponse):
 
         self.advice = [status["AdviceList"]["Advice"]]  # will contain "title" and "body"
 
+class MarcinLatestBatteryStatusResponse(CarwingsResponse):
+    def __init__(self, status):
+        CarwingsResponse.__init__(self, status["BatteryStatusRecords"])
+        self.answer = status
+
+        recs = status["BatteryStatusRecords"]
+
+        bs = recs["BatteryStatus"]
+        self.battery_capacity = bs["BatteryCapacity"]
+        self.battery_remaining_amount = bs["BatteryRemainingAmount"]
+        self.battery_remaining_wh = bs["BatteryRemainingAmountWH"]
+
+        self.charging_status = bs["BatteryChargingStatus"]
+        self.is_charging = ("NOT_CHARGING" != bs["BatteryChargingStatus"])    # double negatives are fun
+        self.is_quick_charging = ("RAPIDLY_CHARGING" == bs["BatteryChargingStatus"])
+
+        self.plugin_state = recs["PluginState"]
+        self.is_connected = ("NOT_CONNECTED" != recs["PluginState"])          # another double negative
+        self.is_connected_to_quick_charger = ("QC_CONNECTED" == recs["PluginState"])
+
+        self._set_cruising_ranges(recs, off_key="CruisingRangeAcOff", on_key="CruisingRangeAcOn")
+
+        if "TimeRequiredToFull" in recs:
+            self.time_to_full_trickle = timedelta(minutes=_time_remaining(recs["TimeRequiredToFull"]))
+        else:
+            self.time_to_full_trickle = None
+
+        if "TimeRequiredToFull200" in recs:
+            self.time_to_full_l2 = timedelta(minutes=_time_remaining(recs["TimeRequiredToFull200"]))
+        else:
+            self.time_to_full_l2 = None
+
+        if "TimeRequiredToFull200_6kW" in recs:
+            self.time_to_full_l2_6kw = timedelta(minutes=_time_remaining(recs["TimeRequiredToFull200_6kW"]))
+        else:
+            self.time_to_full_l2_6kw = None
+
+        if float(self.battery_capacity) == 0:
+            log.debug("battery_capacity=0, status=%s", status)
+            self.battery_percent = 0
+        else:
+            self.battery_percent = 100 * float(self.battery_remaining_amount) / 12
+
+        # Leaf 2016 has SOC (State Of Charge) in BatteryStatus, a more accurate battery_percentage
+        if "SOC" in bs:
+            self.state_of_charge = bs["SOC"]["Value"]
+            # Update battery_percent with more accurate version
+            self.battery_percent = float(self.state_of_charge)
+        else:
+            self.state_of_charge = None
+
+
+
 
 class CarwingsLatestBatteryStatusResponse(CarwingsResponse):
     """

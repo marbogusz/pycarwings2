@@ -271,7 +271,7 @@ class Leaf:
 
         return None
 
-    def request_cabin_temp(self):
+    def req_temp(self):
         response = self.session._request_with_retry("GetInteriorTemperatureRequestForNsp.php", {
             "RegionCode": self.session.region_code,
             "lg": self.session.language,
@@ -281,7 +281,7 @@ class Leaf:
         })
         return response["resultKey"]
 
-    def request_cabin_temp_result(self, result_key):
+    def req_temp_result(self, result_key):
         response = self.session._request_with_retry("GetInteriorTemperatureResultForNsp.php", {
             "RegionCode": self.session.region_code,
             "lg": self.session.language,
