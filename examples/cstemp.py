@@ -27,21 +27,13 @@ print("*************************** Login... ************************************
 leaf = s.get_leaf()
 
 
-print("*************************** Try getting the temp ****************************")
-res = leaf.request_cabin_temp()
+print("*************************** Try getting the temp NEW ****************************")
+res = leaf.t1()
 
-
-while(True):
-    print("*************************** Sleep ****************************")
-    time.sleep(10)
-    response = leaf.request_cabin_temp_result(res)
-    if response is not None:
-        break
-
-print("*********************** get_latest_hvac_status from servers ********************")
-leaf_info = leaf.get_latest_hvac_status()
-if leaf_info.is_hvac_running:
-    print("************************* Climate control is on *******************************")
-else:
-    print("************************* Climate control is off ******************************")
+#print("*********************** get_latest_hvac_status from servers ********************")
+#leaf_info = leaf.get_latest_hvac_status()
+#if leaf_info.is_hvac_running:
+#    print("************************* Climate control is on *******************************")
+#else:
+#    print("************************* Climate control is off ******************************")
 
